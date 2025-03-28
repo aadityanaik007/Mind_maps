@@ -1,27 +1,16 @@
 
-from typing import Union
-
 from fastapi import FastAPI, Depends
-from pydantic import BaseModel
 from mongo import db 
 from mongo_querries import find_all,find_one,bulk_insert
-from finnhub_apis import get_company_news,get_general_news,get_ohlc_data
+from finnhub_apis import get_company_news
+from Middleware.basic_fundamentals import basic_fundamental_extraction,company_news_extraction
 app = FastAPI()
-
-def get_db():
-    return db
-
-@app.get("/news",tags=["news"])
-async def get_news(db=Depends(get_db)):
-    docs = db["news"].find()
-    results = await docs.to_list(length=10)
-    return results
 
 # Remove this
 @app.get("/company_data",tags=["news"])
 async def get_all_company_data():
     try:
-        return await find_all(collection_name="Company_specific_data",projection={"_id": 0},condition={})
+        return await find_all(collection_name="Company_specific_news_data",projection={"_id": 0},condition={})
     except Exception as e:
         return {"error": str(e)}        
     
@@ -29,15 +18,25 @@ async def get_all_company_data():
 @app.get("/company_data/{company_name}",tags=["news"])
 async def get_company_data(company_name: str="AAPL"):
     try:
-        return await find_one(collection_name="Company_specific_data",projection={"_id": 0},condition={"company_name":company_name})
+        return await find_one(collection_name="Company_specific_news_data",projection={"_id": 0},condition={"company_name":company_name})
     except Exception as e:
         return {"error": str(e)}
     
-@app.post("/news",tags=["news"])
-async def create_news(company_name:str,start_date:str,end_date:str,db=Depends(get_db)):
+@app.post("/company_news",tags=["news"])
+async def create_company_news(company_name:str,start_date:str,end_date:str):
     try:
-        data = get_company_news(company_name,start_date,end_date)
-        response = await bulk_insert("Company_specific_data",data)
-        return response
+       company_news_extraction(company_name,start_date,end_date)
+       return {"message":"Data inserted successfully"}
+    except Exception as e:
+        return {"error": str(e)}
+    
+@app.post("/basic_fundamentals",tags=["news"])
+async def create_basic_fundamentals(symbol:str):
+    try:
+        data = await basic_fundamental_extraction(symbol)
+        if not data:
+            return {"error": "No data found"}
+        
+        return data
     except Exception as e:
         return {"error": str(e)}

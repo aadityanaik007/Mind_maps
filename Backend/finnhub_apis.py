@@ -37,4 +37,11 @@ def get_ohlc_data(ticker, start_date, end_date):
     except Exception as e:
         print(f"Error fetching OHLC data: {e}")
         return {}
-    
+
+def basic_fundamentals(symbol):
+    try:
+        data = finnhub_client.company_basic_financials(symbol, 'all')
+        return data
+    except Exception as e:
+        print(f"Error fetching basic fundamentals: {e}")
+        return {}
