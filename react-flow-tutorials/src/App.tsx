@@ -1,13 +1,17 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ChakraProvider } from "@chakra-ui/react";
-import { useState } from "react";
-import { Workflow } from "./Workflow/Workflow";
+import Homepage from "./Homepage/Homepage";
+import { Workflow } from "./Workflow/Workflow"; // your mindmap page
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <ChakraProvider>
-      <Workflow />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/mindmap" element={<Workflow />} />
+        </Routes>
+      </Router>
     </ChakraProvider>
   );
 }

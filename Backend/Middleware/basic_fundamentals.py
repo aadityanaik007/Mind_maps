@@ -63,7 +63,7 @@ async def basic_fundamental_extraction(symbol):
 async def company_news_extraction(company_name,start_date,end_date):
     try:
         data = get_company_news(company_name,start_date,end_date)
-        response = await bulk_insert("Company_specific_news_data",data)
+        response = await bulk_insert(collection_name="Company_specific_news_data", data=data, chunk_size=500)
         return response
     except Exception as e:
         print(f"Error in company news extraction: {e}")
